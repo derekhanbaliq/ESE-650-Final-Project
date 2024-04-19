@@ -18,6 +18,7 @@ from f110_gym.envs.f110_env import F110Env
 from ppo_continuous import Agent
 from utils.render import Renderer, fix_gui
 from utils.traj_utils import get_front_traj, get_interpolated_traj_with_horizon, densify_offset_traj, get_offset_traj
+from utils.lidar_utils import get_lidar_data
 from utils.waypoint_loader import WaypointLoader
 
 
@@ -50,6 +51,7 @@ def main():
     env.add_render_callback(renderer.render_horizon_traj) if rl_planner else None
     env.add_render_callback(renderer.render_lookahead_point) if rl_planner else None
     env.add_render_callback(renderer.render_offset_traj) if rl_planner else None
+    env.add_render_callback(renderer.render_lidar_data) if rl_planner else None
     env.add_render_callback(fix_gui)
 
     lap_time = 0.0
@@ -80,11 +82,12 @@ def main():
             dense_offset_traj = densify_offset_traj(offset_traj)  # [x, y, v]
             lookahead_point_profile = get_lookahead_point(dense_offset_traj, lookahead_dist=1.5)
             steering, speed = controller.rl_control(obs, lookahead_point_profile, max_speed=rl_env.rl_max_speed)
-
+            lidar_data = get_lidar_data(obs['scans'],obs['poses_x'],obs['poses_y'],obs['poses_theta'])
             renderer.front_traj = front_traj
             renderer.horizon_traj = horizon_traj
             renderer.offset_traj = offset_traj
             renderer.ahead_point = lookahead_point_profile[:2]  # [x, y]
+            renderer.lidar_data = lidar_data
 
         else:
             steering, speed = controller.control(obs)

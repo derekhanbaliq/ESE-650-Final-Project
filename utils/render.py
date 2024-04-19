@@ -21,6 +21,9 @@ class Renderer:
         self.offset_traj = None
         self.last_offset_traj = []
 
+        self.lidar_data = None
+        self.last_lidar_data = []
+
     def render_waypoints(self, e):
         """
         update waypoints being drawn by EnvRenderer
@@ -119,6 +122,23 @@ class Renderer:
                             ('v3f/stream', [scaled_point[i, 0], scaled_point[i, 1], 0]),
                             ('c3B/stream', [0, 255, 0]))  # Green color
             self.last_offset_traj.append(b)
+    def render_lidar_data(self, e):
+        """Render the occupancy grid as Green points."""
+        if self.lidar_data == []:
+            pass
+        else:
+            point = self.lidar_data
+            scaled_point = 50 * point
+
+            for last_point in self.last_lidar_data:
+                last_point.delete()
+            self.last_lidar_data.clear()
+
+            for i in range(scaled_point.shape[0]):
+                b = e.batch.add(1, GL_POINTS, None,
+                                ('v3f/stream', [scaled_point[i, 0], scaled_point[i, 1], 0]),
+                                ('c3B/stream', [0, 255, 0]))  # Green color
+                self.last_lidar_data.append(b)
 
 
 def fix_gui(e):
