@@ -105,22 +105,21 @@ class Renderer:
 
     def render_offset_traj(self, e):
         """Update offset trajectory being drawn."""
-        if self.offset_traj is None:
-            return  # Exit if no data available
+        def create_triangle(x, y, size):
+            return ('v2f/stream', [x + size, y,
+                                   x - size / 2, y - size,
+                                   x - size / 2, y + size])
 
-        point = self.offset_traj[:, :2]
-        scaled_point = 50 * point  # scaling the trajectory points
+        point = self.offset_traj
+        scaled_point = 50. * point
 
-        # Clearing previous trajectory points from the batch
         for last_point in self.last_offset_traj:
             last_point.delete()
         self.last_offset_traj.clear()
 
-        # Adding new points to the batch
         for i in range(scaled_point.shape[0]):
-            b = e.batch.add(1, GL_POINTS, None,
-                            ('v3f/stream', [scaled_point[i, 0], scaled_point[i, 1], 0]),
-                            ('c3B/stream', [0, 255, 0]))  # Green color
+            b = e.batch.add(3, GL_TRIANGLES, None, create_triangle(scaled_point[i, 0], scaled_point[i, 1], 4),
+                            ('c3B/stream', [0, 255, 0, 0, 255, 0, 0, 255, 0]))
             self.last_offset_traj.append(b)
     def render_lidar_data(self, e):
         """Render the occupancy grid as Green points."""
